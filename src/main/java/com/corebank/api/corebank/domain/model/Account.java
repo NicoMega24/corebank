@@ -6,6 +6,10 @@ import java.time.LocalDateTime;
 import com.corebank.api.corebank.domain.enums.AccountStatusEnum;
 import com.corebank.api.corebank.domain.enums.AccountTypeEnum;
 import com.corebank.api.corebank.domain.enums.CurrencyEnum;
+import com.corebank.api.corebank.domain.exception.AccountBlockedException;
+import com.corebank.api.corebank.domain.exception.AccountClosedException;
+import com.corebank.api.corebank.domain.exception.InsufficientFundsException;
+import com.corebank.api.corebank.domain.exception.InvalidAccountStateException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -95,17 +99,17 @@ public class Account {
 
     public void deposit(BigDecimal amount) {
         validateAmount(amount);
-        validateAccountIsActive();
+        validateAccountOperable();
 
         this.balance = this.balance.add(amount);
     }
 
     public void withdraw(BigDecimal amount) {
         validateAmount(amount);
-        validateAccountIsActive();
+        validateAccountOperable();
 
         if (this.balance.compareTo(amount) < 0) {
-            throw new IllegalStateException("Insufficient funds");
+            throw new InsufficientFundsException();
         }
 
         this.balance = this.balance.subtract(amount);
@@ -113,11 +117,11 @@ public class Account {
 
     public void block() {
         if (this.status == AccountStatusEnum.BLOCKED) {
-            throw new IllegalStateException("Account is already blocked");
+            throw new InvalidAccountStateException("Account is already blocked");
         }
 
         if (this.status == AccountStatusEnum.CLOSED) {
-            throw new IllegalStateException("Cannot block a closed account");
+            throw new AccountClosedException();
         }
 
         this.status = AccountStatusEnum.BLOCKED;
@@ -125,11 +129,11 @@ public class Account {
 
     public void activate() {
         if (this.status == AccountStatusEnum.ACTIVE) {
-            throw new IllegalStateException("Account is already active");
+            throw new InvalidAccountStateException("Account is already active");
         }
 
         if (this.status == AccountStatusEnum.CLOSED) {
-            throw new IllegalStateException("Cannot activate a closed account");
+            throw new AccountClosedException();
         }
 
         this.status = AccountStatusEnum.ACTIVE;
@@ -137,11 +141,11 @@ public class Account {
 
     public void close() {
         if (this.status == AccountStatusEnum.CLOSED) {
-            throw new IllegalStateException("Account is already closed");
+            throw new InvalidAccountStateException("Account is already closed");
         }
 
         if (this.balance.compareTo(BigDecimal.ZERO) > 0) {
-            throw new IllegalStateException("Cannot close account with remaining balance");
+            throw new InvalidAccountStateException("Cannot close account with remaining balance");
         }
 
         this.status = AccountStatusEnum.CLOSED;
@@ -149,13 +153,17 @@ public class Account {
 
     private void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero");
+            throw new InvalidAccountStateException("Amount must be greater than zero");
         }
     }
 
-    private void validateAccountIsActive() {
-        if (this.status != AccountStatusEnum.ACTIVE) {
-            throw new IllegalStateException("Account is not active");
+    private void validateAccountOperable() {
+        if (this.status == AccountStatusEnum.CLOSED) {
+            throw new AccountClosedException();
+        }
+
+        if (this.status == AccountStatusEnum.BLOCKED) {
+            throw  new AccountBlockedException();
         }
     }
 
