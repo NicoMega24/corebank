@@ -18,18 +18,26 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Entity
+@Table(name= "accounts")
 public class Account {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable= false)
+    @Column(unique = true, nullable= false, updatable= false)
     private String accountNumber;
 
-    @Column(nullable= false)
+    @Column(nullable= false, updatable= false)
     private Long customerId;
 
     @Column(nullable= false)
@@ -47,8 +55,9 @@ public class Account {
     @Column(nullable= false)
     private AccountStatusEnum status;
 
-    @Column(nullable= false)
+    @Column(nullable= false, updatable= false)
     private LocalDateTime createdAt;
+
 
     public Account(String accountNumber, Long customerId, CurrencyEnum currency, AccountTypeEnum accountType) {
         this.accountNumber = accountNumber;
@@ -57,45 +66,15 @@ public class Account {
         this.currency = currency;
         this.accountType = accountType;
         this.status = AccountStatusEnum.ACTIVE;
+    }
+
+    @PrePersist
+    private void onCreate(){
+        if (this.balance == null) {
+            this.balance = BigDecimal.ZERO;
+        }
         this.createdAt = LocalDateTime.now();
     }
-
-    protected Account(){
-        
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public CurrencyEnum getCurrency() {
-        return currency;
-    }
-
-    public AccountTypeEnum getAccountType() {
-        return accountType;
-    }
-
-    public AccountStatusEnum getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
 
     public void deposit(BigDecimal amount) {
         validateAmount(amount);
