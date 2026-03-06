@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.corebank.api.corebank.application.exceptions.AccountNotFoundException;
+import com.corebank.api.corebank.application.service.transaction.TransactionService;
 import com.corebank.api.corebank.domain.enums.AccountTypeEnum;
 import com.corebank.api.corebank.domain.enums.CurrencyEnum;
+import com.corebank.api.corebank.domain.enums.TransactionType;
 import com.corebank.api.corebank.domain.model.Account;
+import com.corebank.api.corebank.domain.model.Transaction;
 import com.corebank.api.corebank.infrastructure.persistence.AccountRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
+    private final TransactionService transactionService;
 
     @Override
     public Account createAccount(String accountNumber, 
@@ -35,12 +39,33 @@ public class AccountServiceImpl implements AccountService {
     public void deposit(Long accountId, BigDecimal amount) {
         Account account = getAccountById(accountId);
         account.deposit(amount);
+
+        transactionService.register(
+            new Transaction(
+                account.getId(),
+                TransactionType.DEPOSIT,
+                amount,
+                "Deposit",
+                null
+        )
+        );
     }
 
     @Override
     public void withdraw(Long accountId, BigDecimal amount) {
         Account account = getAccountById(accountId);
         account.withdraw(amount);
+
+        transactionService.register(
+                new Transaction(
+                        account.getId(),
+                        TransactionType.WITHDRAW,
+                        amount,
+                        "Withdraw",
+                        null
+                )
+        );
+
     }
 
     @Override

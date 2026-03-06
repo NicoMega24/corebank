@@ -46,7 +46,7 @@ public class AccountController {
     }
 
     //GET ACCOUNT BY ID
-    @GetMapping("/api/v1/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<AccountResponseDTO> getById(@PathVariable Long id) {
             
             Account account = accountService.getAccountById(id);
@@ -54,7 +54,7 @@ public class AccountController {
     }
 
     //DEPOSIT
-    @PostMapping("/api/v1/{id}/deposit")
+    @PostMapping("/{id}/deposit")
     public ResponseEntity<AccountResponseDTO> deposit(
             @PathVariable Long id,
             @Valid @RequestBody DepositRequestDTO request) {
@@ -67,7 +67,7 @@ public class AccountController {
     }
 
     //WITHDRAW
-    @PostMapping("/api/v1/{id}/withdraw")
+    @PostMapping("/{id}/withdraw")
     public ResponseEntity<AccountResponseDTO> withdraw(
             @PathVariable Long id,
             @Valid @RequestBody WithdrawRequestDTO request) {
@@ -79,7 +79,7 @@ public class AccountController {
     }
 
     //BLOCK ACCOUNT
-    @PatchMapping("/api/V1/{id}/block")
+    @PatchMapping("/{id}/block")
     public ResponseEntity<Void> block(@PathVariable Long id) {
         
         accountService.activateAccount(id);
@@ -89,7 +89,7 @@ public class AccountController {
 
 
     //ACTIVE ACCOUNT
-    @PatchMapping("/api/v1/{id}/activate")
+    @PatchMapping("/{id}/activate")
     public ResponseEntity<Void> activate(@PathVariable Long id) {
         
         accountService.activateAccount(id);
@@ -99,7 +99,7 @@ public class AccountController {
 
 
     //CLOSE AACOUNT
-    @PatchMapping("/api/v1/{id}/close")
+    @PatchMapping("/{id}/close")
     public ResponseEntity<Void> close(@PathVariable Long id) {
         
         accountService.closedAccount(id);
