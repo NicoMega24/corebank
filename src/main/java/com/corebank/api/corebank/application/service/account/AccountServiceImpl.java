@@ -94,4 +94,47 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new AccountNotFoundException(id));
     }
 
+    @Override
+    @Transactional
+    public void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount) {
+
+        if (fromAccountId.equals(toAccountId)) {
+            throw new IllegalArgumentException("Cannot transfer to the same account");
+        }
+
+        Account fromAccount = getAccountById(fromAccountId);
+        Account toAccount = getAccountById(toAccountId);
+
+        // retiro
+        fromAccount.withdraw(amount);
+
+        // deposito
+        toAccount.deposit(amount);
+
+        // registrar salida
+        transactionService.register(
+                new Transaction(
+                        fromAccount.getId(),
+                        TransactionType.TRANSFER_OUT,
+                        amount,
+                        "Transfer to account " + toAccountId,
+                        toAccountId
+                )
+        );
+
+        // registrar entrada
+        transactionService.register(
+                new Transaction(
+                        toAccount.getId(),
+                        TransactionType.TRANSFER_IN,
+                        amount,
+                        "Transfer from account " + fromAccountId,
+                        fromAccountId
+                )
+        );
+
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+    }
+
 }

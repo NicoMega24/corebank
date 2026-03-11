@@ -25,4 +25,6 @@ public interface AccountService {
 
     void closedAccount(Long accountId);
 
+    void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount);
+
 }

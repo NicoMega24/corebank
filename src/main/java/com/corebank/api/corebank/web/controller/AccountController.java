@@ -14,6 +14,7 @@ import com.corebank.api.corebank.domain.model.Account;
 import com.corebank.api.corebank.web.dto.account.AccountRequestDTO;
 import com.corebank.api.corebank.web.dto.account.AccountResponseDTO;
 import com.corebank.api.corebank.web.dto.account.DepositRequestDTO;
+import com.corebank.api.corebank.web.dto.account.TransferRequestDTO;
 import com.corebank.api.corebank.web.dto.account.WithdrawRequestDTO;
 import com.corebank.api.corebank.web.mapper.AccountMapper;
 
@@ -105,5 +106,16 @@ public class AccountController {
         accountService.closedAccount(id);
         
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping("/transfer")
+    public ResponseEntity<Void> transfer(@RequestBody TransferRequestDTO request) {
+        accountService.transfer(
+                request.fromAccountId(),
+                request.toAccountId(),
+                request.amount()
+        );
+        return ResponseEntity.ok().build();    
     }
 }
