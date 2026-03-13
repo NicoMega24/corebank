@@ -20,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,6 +59,9 @@ public class Account {
     @Column(nullable= false, updatable= false)
     private LocalDateTime createdAt;
 
+    @Version
+    private Long version;
+
 
     public Account(String accountNumber, Long customerId, CurrencyEnum currency, AccountTypeEnum accountType) {
         this.accountNumber = accountNumber;
@@ -66,6 +70,7 @@ public class Account {
         this.currency = currency;
         this.accountType = accountType;
         this.status = AccountStatusEnum.ACTIVE;
+        this.createdAt = LocalDateTime.now();
     }
 
     @PrePersist

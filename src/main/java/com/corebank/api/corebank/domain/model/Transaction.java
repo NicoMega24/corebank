@@ -39,17 +39,22 @@ public class Transaction {
 
     private Long relatedAccountId;
 
+    private String transactionGroupId;
+
     public Transaction(Long accountId,
                         TransactionType type,
                         BigDecimal amount,
                         String description,
-                        Long relatedAccountId) {
+                        Long relatedAccountId,
+                        String transactionGroupId) {
+
         this.accountId = accountId;
         this.type = type;
         this.amount = amount;
         this.createdAt = LocalDateTime.now();
         this.description = description;
         this.relatedAccountId = relatedAccountId;
+        this.transactionGroupId = transactionGroupId;
         }
 
 }

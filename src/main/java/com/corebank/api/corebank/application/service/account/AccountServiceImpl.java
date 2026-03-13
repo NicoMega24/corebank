@@ -46,6 +46,7 @@ public class AccountServiceImpl implements AccountService {
                 TransactionType.DEPOSIT,
                 amount,
                 "Deposit",
+                null,
                 null
         )
         );
@@ -62,6 +63,7 @@ public class AccountServiceImpl implements AccountService {
                         TransactionType.WITHDRAW,
                         amount,
                         "Withdraw",
+                        null,
                         null
                 )
         );
@@ -102,6 +104,8 @@ public class AccountServiceImpl implements AccountService {
             throw new IllegalArgumentException("Cannot transfer to the same account");
         }
 
+        String transactionGroupId = java.util.UUID.randomUUID().toString();
+
         Account fromAccount = getAccountById(fromAccountId);
         Account toAccount = getAccountById(toAccountId);
 
@@ -118,7 +122,9 @@ public class AccountServiceImpl implements AccountService {
                         TransactionType.TRANSFER_OUT,
                         amount,
                         "Transfer to account " + toAccountId,
-                        toAccountId
+                        toAccountId,
+                        transactionGroupId
+                    
                 )
         );
 
@@ -129,7 +135,8 @@ public class AccountServiceImpl implements AccountService {
                         TransactionType.TRANSFER_IN,
                         amount,
                         "Transfer from account " + fromAccountId,
-                        fromAccountId
+                        fromAccountId,
+                        transactionGroupId
                 )
         );
 

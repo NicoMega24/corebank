@@ -110,7 +110,7 @@ public class AccountController {
 
 
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@RequestBody TransferRequestDTO request) {
+    public ResponseEntity<Void> transfer(@RequestBody @Valid TransferRequestDTO request) {
         accountService.transfer(
                 request.fromAccountId(),
                 request.toAccountId(),
