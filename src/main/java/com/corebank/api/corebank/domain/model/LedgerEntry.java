@@ -1,12 +1,14 @@
 package com.corebank.api.corebank.domain.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,28 +17,23 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name="transfers")
-public class Transfer {
+@Table(name="ledger_entries")
+public class LedgerEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long fromAccountId;
-
-    private Long toAccountId;
-
-    private BigDecimal amount;
-
-    private String transactionGroupId;
+    private String reference;
 
     private LocalDateTime createdAt;
 
-    public Transfer(Long fromAccountId, Long toAccountId, BigDecimal amount, String transactionGroupId) {
-        this.fromAccountId = fromAccountId;
-        this.toAccountId = toAccountId;
-        this.amount = amount;
-        this.transactionGroupId = transactionGroupId;
+    @OneToMany(mappedBy="ledgerEntry", cascade=CascadeType.ALL)
+    private List<LedgerLine> lines;
+
+    public LedgerEntry(String reference, List<LedgerLine> lines) {
+        this.reference = reference;
+        this.lines = lines;
         this.createdAt = LocalDateTime.now();
     }
 

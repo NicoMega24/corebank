@@ -1,7 +1,7 @@
 package com.corebank.api.corebank.web.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,15 +23,30 @@ public class TransactionController {
     private final TransactionService transactionService;
     private final TransactionMapper transactionMapper;
 
-    @GetMapping("/account/{id}/transactions")
-    public ResponseEntity<List<TransactionResponse>> getByAccount(@PathVariable Long accountId) {
+//     @GetMapping("/account/{accountId}")
+//     public ResponseEntity<List<TransactionResponse>> getByAccount(
+//             @PathVariable Long accountId) {
 
-        List<Transaction> transactions =
-                transactionService.getTransactionsByAccountId(accountId);
+//         List<Transaction> transactions =
+//                 transactionService.getTransactionsByAccountId(accountId);
 
-        List<TransactionResponse> response = transactionMapper.toResponseList(transactions);
+//         List<TransactionResponse> response =
+//                 transactionMapper.toResponseList(transactions);
+
+//         return ResponseEntity.ok(response);
+//     }
+
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<Page<TransactionResponse>> getByAccount(
+            @PathVariable Long accountId,
+            Pageable pageable) {
+
+        Page<Transaction> transactions =
+                transactionService.getTransactions(accountId, pageable);
+
+        Page<TransactionResponse> response =
+                transactions.map(transactionMapper::toResponse);
 
         return ResponseEntity.ok(response);
-        
     }
 }

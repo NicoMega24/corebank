@@ -1,5 +1,8 @@
 package com.corebank.api.corebank.web.controller;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -7,115 +10,112 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.corebank.api.corebank.application.service.account.AccountService;
+import com.corebank.api.corebank.domain.enums.AccountTypeEnum;
+import com.corebank.api.corebank.domain.enums.CurrencyEnum;
 import com.corebank.api.corebank.domain.model.Account;
-import com.corebank.api.corebank.web.dto.account.AccountRequestDTO;
-import com.corebank.api.corebank.web.dto.account.AccountResponseDTO;
-import com.corebank.api.corebank.web.dto.account.DepositRequestDTO;
 import com.corebank.api.corebank.web.dto.account.TransferRequestDTO;
-import com.corebank.api.corebank.web.dto.account.WithdrawRequestDTO;
-import com.corebank.api.corebank.web.mapper.AccountMapper;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-
-@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/accounts")
+@RequestMapping("/accounts")
+@RequiredArgsConstructor
 public class AccountController {
 
     private final AccountService accountService;
-    private final AccountMapper accountMapper;
 
-    @PostMapping //CREATE ACCOUNT
-    public ResponseEntity<AccountResponseDTO> create(
-        @Valid @RequestBody AccountRequestDTO request) {
+    // CREATE ACCOUNT
+    @PostMapping
+    public ResponseEntity<Account> createAccount(
+            @RequestParam String accountNumber,
+            @RequestParam Long customerId,
+            @RequestParam CurrencyEnum currency,
+            @RequestParam AccountTypeEnum accountType
+    ) {
 
         Account account = accountService.createAccount(
-            request.accountNumber(),
-            request.customerId(),
-            request.currency(),
-            request.accountType()
+                accountNumber,
+                customerId,
+                currency,
+                accountType
         );
 
-        return ResponseEntity
-                .status(201)
-                .body(accountMapper.toResponse(account));
+        return ResponseEntity.ok(account);
     }
 
-    //GET ACCOUNT BY ID
+    // GET ACCOUNT
     @GetMapping("/{id}")
-    public ResponseEntity<AccountResponseDTO> getById(@PathVariable Long id) {
-            
-            Account account = accountService.getAccountById(id);
-            return ResponseEntity.ok(accountMapper.toResponse(account));
+    public ResponseEntity<Account> getAccount(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.getAccountById(id));
     }
 
-    //DEPOSIT
+    // DEPOSIT
     @PostMapping("/{id}/deposit")
-    public ResponseEntity<AccountResponseDTO> deposit(
+    public ResponseEntity<Void> deposit(
             @PathVariable Long id,
-            @Valid @RequestBody DepositRequestDTO request) {
+            @RequestParam BigDecimal amount
+    ) {
 
-        accountService.deposit(id, request.amount());
-        Account updatedAccount = accountService.getAccountById(id);
-
-        return ResponseEntity.ok(accountMapper.toResponse(updatedAccount));
-
+        accountService.deposit(id, amount);
+        return ResponseEntity.ok().build();
     }
 
-    //WITHDRAW
+    // WITHDRAW
     @PostMapping("/{id}/withdraw")
-    public ResponseEntity<AccountResponseDTO> withdraw(
+    public ResponseEntity<Void> withdraw(
             @PathVariable Long id,
-            @Valid @RequestBody WithdrawRequestDTO request) {
-        
-        accountService.withdraw(id, request.amount());
-        Account updatedAccount = accountService.getAccountById(id);
+            @RequestParam BigDecimal amount
+    ) {
 
-        return ResponseEntity.ok(accountMapper.toResponse(updatedAccount));
+        accountService.withdraw(id, amount);
+        return ResponseEntity.ok().build();
     }
 
-    //BLOCK ACCOUNT
-    @PatchMapping("/{id}/block")
-    public ResponseEntity<Void> block(@PathVariable Long id) {
-        
-        accountService.activateAccount(id);
-        
-        return ResponseEntity.noContent().build();
-    }
-
-
-    //ACTIVE ACCOUNT
-    @PatchMapping("/{id}/activate")
-    public ResponseEntity<Void> activate(@PathVariable Long id) {
-        
-        accountService.activateAccount(id);
-        
-        return ResponseEntity.noContent().build();
-    }
-
-
-    //CLOSE AACOUNT
-    @PatchMapping("/{id}/close")
-    public ResponseEntity<Void> close(@PathVariable Long id) {
-        
-        accountService.closedAccount(id);
-        
-        return ResponseEntity.noContent().build();
-    }
-
-
+    // TRANSFER
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@RequestBody @Valid TransferRequestDTO request) {
+    public ResponseEntity<Void> transfer(
+            @RequestBody @Valid TransferRequestDTO request
+    ) {
+
+        String transactionGroupId = UUID.randomUUID().toString();
+
         accountService.transfer(
                 request.fromAccountId(),
                 request.toAccountId(),
-                request.amount()
+                request.amount(),
+                transactionGroupId
         );
-        return ResponseEntity.ok().build();    
+
+        return ResponseEntity.ok().build();
     }
+
+    // BLOCK
+    @PatchMapping("/{id}/block")
+    public ResponseEntity<Void> blockAccount(@PathVariable Long id) {
+
+        accountService.blockAccount(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // ACTIVATE
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<Void> activateAccount(@PathVariable Long id) {
+
+        accountService.activateAccount(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // CLOSE
+    @PatchMapping("/{id}/close")
+    public ResponseEntity<Void> closeAccount(@PathVariable Long id) {
+
+        accountService.closedAccount(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

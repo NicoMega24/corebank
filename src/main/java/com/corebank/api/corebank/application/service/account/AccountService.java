@@ -8,10 +8,12 @@ import com.corebank.api.corebank.domain.model.Account;
 
 public interface AccountService {
 
-    Account createAccount(String accountNumber, 
-                        Long customerId, 
-                        CurrencyEnum currency, 
-                        AccountTypeEnum accountType);
+    Account createAccount(
+            String accountNumber,
+            Long customerId,
+            CurrencyEnum currency,
+            AccountTypeEnum accountType
+    );
 
     Account getAccountById(Long id);
 
@@ -19,12 +21,17 @@ public interface AccountService {
 
     void withdraw(Long accountId, BigDecimal amount);
 
+    void transfer(
+            Long fromAccountId,
+            Long toAccountId,
+            BigDecimal amount,
+            String transactionGroupId
+    );
+
     void blockAccount(Long accountId);
 
     void activateAccount(Long accountId);
 
     void closedAccount(Long accountId);
-
-    void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount);
 
 }

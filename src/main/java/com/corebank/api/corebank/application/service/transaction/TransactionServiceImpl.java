@@ -2,6 +2,8 @@ package com.corebank.api.corebank.application.service.transaction;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,5 +30,10 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
     }
 
+    @Override
+    public Page<Transaction> getTransactions(Long accountId, Pageable pageable) {
+        return transactionRepository
+                .findByAccountIdOrderByCreatedAtDesc(accountId, pageable);
+    }
 
 }
