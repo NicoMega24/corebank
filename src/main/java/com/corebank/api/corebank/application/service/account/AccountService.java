@@ -25,7 +25,8 @@ public interface AccountService {
             Long fromAccountId,
             Long toAccountId,
             BigDecimal amount,
-            String transactionGroupId
+            String transactionGroupId,
+            String idempotencyKey
     );
 
     void blockAccount(Long accountId);

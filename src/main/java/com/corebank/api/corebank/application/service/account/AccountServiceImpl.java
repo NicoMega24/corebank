@@ -13,8 +13,10 @@ import com.corebank.api.corebank.domain.enums.AccountTypeEnum;
 import com.corebank.api.corebank.domain.enums.CurrencyEnum;
 import com.corebank.api.corebank.domain.enums.TransactionType;
 import com.corebank.api.corebank.domain.model.Account;
+import com.corebank.api.corebank.domain.model.IdempotencyKey;
 import com.corebank.api.corebank.domain.model.Transaction;
 import com.corebank.api.corebank.infrastructure.persistence.AccountRepository;
+import com.corebank.api.corebank.infrastructure.persistence.IdempotencyRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +28,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final TransactionService transactionService;
     private final LedgerService ledgerService;
+    private final IdempotencyRepository idempotencyRepository;
 
     @Override
     public Account createAccount(
@@ -91,7 +94,18 @@ public class AccountServiceImpl implements AccountService {
             Long fromAccountId,
             Long toAccountId,
             BigDecimal amount,
-            String transactionGroupId) {
+            String transactionGroupId,
+            String idempotencyKey) {
+
+        if (idempotencyKey != null && idempotencyRepository.existsById(idempotencyKey)) {
+                return;
+        }
+
+        if (idempotencyKey != null) {
+                idempotencyRepository.save(
+                        new IdempotencyKey(idempotencyKey, "TRANSFER")
+                );
+        }
 
         if (fromAccountId.equals(toAccountId)) {
             throw new IllegalArgumentException("Cannot transfer to the same account");
